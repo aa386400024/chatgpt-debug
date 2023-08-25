@@ -2,7 +2,7 @@
  * @Author: zcl ex_zhangchunlong@citics.com
  * @Date: 2023-08-22 13:17:21
  * @LastEditors: zcl ex_zhangchunlong@citics.com
- * @LastEditTime: 2023-08-25 10:10:53
+ * @LastEditTime: 2023-08-25 10:17:29
  * @FilePath: /portal-fron-end/src/views/AiAssistantHome.vue
  * @Description: 
 
@@ -217,14 +217,18 @@ export default {
 								</div>
 							) : null}
 						</div>
-						{isRowExpanded && row.code && row.code.dropdownList ? (
+						{isRowExpanded ? (
 							<div class="dropdown-expanded">
-								{row.code.dropdownList.map((option) => (
-									<div class="dropdown-item">
-										<strong>{option.label}：</strong>
-										<span>{option.description}</span>
-									</div>
-								))}
+								{Object.keys(row).map((key) => {
+									if (row[key] && row[key].dropdownList) {
+										return row[key].dropdownList.map((option) => (
+											<div class="dropdown-item">
+												<strong>{option.label}：</strong>
+												<span>{option.description}</span>
+											</div>
+										));
+									}
+								})}
 							</div>
 						) : null}
 					</div>
