@@ -1,14 +1,4 @@
-<!--
- * @Author: zcl ex_zhangchunlong@citics.com
- * @Date: 2023-08-22 13:17:21
- * @LastEditors: zcl ex_zhangchunlong@citics.com
- * @LastEditTime: 2023-08-25 08:44:27
- * @FilePath: /portal-fron-end/src/views/AiAssistantHome.vue
- * @Description: 
 
- * 
- * Copyright (c) 2023 by ${git_name_email}, All Rights Reserved. 
--->
 <template>
 	<div>
 		<my-dialog
@@ -95,7 +85,8 @@ export default {
 									<div class="output-text">输出</div>
 								</div>
 							);
-						}
+						},
+						render: (text, row, index) => this.renderColumn(text, row, index, "name")
 					},
 					{
 						label: "文本",
@@ -204,39 +195,9 @@ export default {
 		renderColumn(text, row, index, type) {
 			const data = row[type];
 			const isExpanded = this.expandedColumn === type; // 判断当前列是否被展开
-
-			if (isExpanded && data.dropdownList) {
+			if (type === "name") {
 				return (
-					<div class="row-body-expanded">
-						{data.dropdownList.map((option, optionIndex) => (
-							<div
-								key={optionIndex}
-								class="row-body"
-								onClick={() =>
-									this.handleSelect(
-										option.value,
-										option.label,
-										option.description,
-										index,
-										type
-									)
-								}
-							>
-								<div class="text-body">
-									{option.value ? (
-										<div onClick={() => this.handleBlock(option)}>
-											<strong>{option.label}：</strong>
-											<span class="description">{option.description}</span>
-										</div>
-									) : null}
-								</div>
-							</div>
-						))}
-					</div>
-				);
-			} else {
-				return (
-					<div class="row-body">
+					<div class="row-body" onClick={() => this.expandRow(index)}>
 						<div class="text-body">
 							{data.value ? (
 								<div onClick={() => this.handleBlock(data)}>
@@ -245,33 +206,97 @@ export default {
 								</div>
 							) : null}
 						</div>
-						{data.isSelect ? (
-							<el-dropdown>
-								<span class="el-dropdown-link">
-									<i class="el-icon-arrow-right el-icon--right"></i>
-								</span>
-								<el-dropdown-menu slot="dropdown">
-									{data.dropdownList.map((option) => (
-										<el-dropdown-item
-											nativeOnClick={() =>
-												this.handleSelect(
-													option.value,
-													option.label,
-													option.description,
-													index,
-													type
-												)
-											}
-										>
-											{option.label}
-										</el-dropdown-item>
-									))}
-								</el-dropdown-menu>
-							</el-dropdown>
+						{row.isExpanded && data.dropdownList ? (
+							<div class="dropdown-expanded">
+								{data.dropdownList.map((option) => (
+									<div class="dropdown-item">
+										<strong>{option.label}：</strong>
+										<span>{option.description}</span>
+									</div>
+								))}
+							</div>
 						) : null}
 					</div>
 				);
+			} else {
+				if (isExpanded && data.dropdownList) {
+					return (
+						<div class="row-body-expanded">
+							{data.dropdownList.map((option, optionIndex) => (
+								<div
+									key={optionIndex}
+									class="row-body"
+									onClick={() =>
+										this.handleSelect(
+											option.value,
+											option.label,
+											option.description,
+											index,
+											type
+										)
+									}
+								>
+									<div class="text-body">
+										{option.value ? (
+											<div onClick={() => this.handleBlock(option)}>
+												<strong>{option.label}：</strong>
+												<span class="description">
+													{option.description}
+												</span>
+											</div>
+										) : null}
+									</div>
+								</div>
+							))}
+						</div>
+					);
+				} else {
+					return (
+						<div class="row-body">
+							<div class="text-body">
+								{data.value ? (
+									<div onClick={() => this.handleBlock(data)}>
+										{data.value}
+										<strong>{data.label}：</strong>
+										<span class="description">{data.description}</span>
+									</div>
+								) : null}
+							</div>
+							{data.isSelect ? (
+								<el-dropdown>
+									<span class="el-dropdown-link">
+										<i class="el-icon-arrow-right el-icon--right"></i>
+									</span>
+									<el-dropdown-menu slot="dropdown">
+										{data.dropdownList.map((option) => (
+											<el-dropdown-item
+												nativeOnClick={() =>
+													this.handleSelect(
+														option.value,
+														option.label,
+														option.description,
+														index,
+														type
+													)
+												}
+											>
+												{option.label}
+											</el-dropdown-item>
+										))}
+									</el-dropdown-menu>
+								</el-dropdown>
+							) : null}
+						</div>
+					);
+				}
 			}
+		},
+
+		expandRow(rowIndex) {
+			// 收起其他所有行
+			this.homeTable.data.forEach((row, index) => {
+				row.isExpanded = index === rowIndex;
+			});
 		},
 
 		// el-dropdown点击事件
@@ -295,6 +320,9 @@ export default {
 
 		// 点击表头的事件
 		handleHeaderClick(column) {
+			if (column.property === "name") {
+				return; // 如果点击的是输入/输出列标题，不进行任何操作
+			}
 			if (["text", "code", "image", "video"].includes(column.property)) {
 				// 如果点击的列已经是展开的列，则恢复到原始状态
 				if (this.expandedColumn === column.property) {
