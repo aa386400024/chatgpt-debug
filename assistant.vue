@@ -1,4 +1,14 @@
+<!--
+ * @Author: zcl ex_zhangchunlong@citics.com
+ * @Date: 2023-08-22 13:17:21
+ * @LastEditors: zcl ex_zhangchunlong@citics.com
+ * @LastEditTime: 2023-08-25 10:10:53
+ * @FilePath: /portal-fron-end/src/views/AiAssistantHome.vue
+ * @Description: 
 
+ * 
+ * Copyright (c) 2023 by ${git_name_email}, All Rights Reserved. 
+-->
 <template>
 	<div>
 		<my-dialog
@@ -65,6 +75,7 @@ export default {
 			globalObject: this.$globalObject(),
 			warningVisible: false,
 			visibleColumns: ["text", "code", "image", "video"],
+			expandedRowIndex: null,
 			expandedColumn: null,
 			homeTable: {
 				border: true,
@@ -194,21 +205,21 @@ export default {
 		// 行渲染事件
 		renderColumn(text, row, index, type) {
 			const data = row[type];
+			const isRowExpanded = this.expandedRowIndex === index;
 			const isExpanded = this.expandedColumn === type; // 判断当前列是否被展开
 			if (type === "name") {
 				return (
 					<div class="row-body" onClick={() => this.expandRow(index)}>
 						<div class="text-body">
-							{data.value ? (
-								<div onClick={() => this.handleBlock(data)}>
-									<strong>{data.label}：</strong>
-									<span class="description">{data.description}</span>
+							{data ? (
+								<div>
+									<strong>{data}</strong>
 								</div>
 							) : null}
 						</div>
-						{row.isExpanded && data.dropdownList ? (
+						{isRowExpanded && row.code && row.code.dropdownList ? (
 							<div class="dropdown-expanded">
-								{data.dropdownList.map((option) => (
+								{row.code.dropdownList.map((option) => (
 									<div class="dropdown-item">
 										<strong>{option.label}：</strong>
 										<span>{option.description}</span>
@@ -293,10 +304,14 @@ export default {
 		},
 
 		expandRow(rowIndex) {
-			// 收起其他所有行
-			this.homeTable.data.forEach((row, index) => {
-				row.isExpanded = index === rowIndex;
-			});
+			console.log(rowIndex, "rowIndex");
+			if (this.expandedRowIndex === rowIndex) {
+				// 如果点击的是已经展开的行，则收起它
+				this.expandedRowIndex = null;
+			} else {
+				// 否则，展开点击的行
+				this.expandedRowIndex = rowIndex;
+			}
 		},
 
 		// el-dropdown点击事件
