@@ -1,4 +1,14 @@
+<!--
+ * @Author: zcl ex_zhangchunlong@citics.com
+ * @Date: 2023-08-22 13:17:21
+ * @LastEditors: zcl ex_zhangchunlong@citics.com
+ * @LastEditTime: 2023-08-25 13:51:39
+ * @FilePath: /portal-fron-end/src/views/AiAssistantHome.vue
+ * @Description: 
 
+ * 
+ * Copyright (c) 2023 by ${git_name_email}, All Rights Reserved. 
+-->
 <template>
     <div>
         <my-dialog
@@ -298,21 +308,18 @@ export default {
         },
 
         expandRow(rowIndex) {
-            if (this.expandedRowIndex === rowIndex) {
-                console.log(this.expandedRowIndex, rowIndex, "1111");
-                this.homeTable.data = this.homeTable.data.map((item, index) => {
-                    item.isVisible = true;
-                    return item;
+            if (this.homeTable.data[rowIndex].isVisible) {
+                this.homeTable.data.forEach((item) => {
+                    this.$set(item, "isVisible", true);
                 });
-                console.log(this.homeTable.data, "this.homeTable.data");
-                this.expandedRowIndex = null;
             } else {
-                console.log(this.expandedRowIndex, rowIndex, "2222");
-                this.homeTable.data = this.homeTable.data.map((item, index) => {
-                    item.isVisible = index === rowIndex;
-                    return item;
+                this.homeTable.data.forEach((item, index) => {
+                    if (index === rowIndex) {
+                        this.$set(item, "isVisible", true);
+                    } else {
+                        this.$set(item, "isVisible", false);
+                    }
                 });
-                this.expandedRowIndex = rowIndex;
             }
         },
 
