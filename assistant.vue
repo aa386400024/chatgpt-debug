@@ -2,7 +2,7 @@
  * @Author: zcl ex_zhangchunlong@citics.com
  * @Date: 2023-08-22 13:17:21
  * @LastEditors: zcl ex_zhangchunlong@citics.com
- * @LastEditTime: 2023-08-28 13:26:04
+ * @LastEditTime: 2023-08-29 16:15:49
  * @FilePath: /portal-fron-end/src/views/AiAssistantHome.vue
  * @Description: 
 
@@ -30,6 +30,7 @@
 		<div class="container-margin">
 			<t-table
 				v-if="dataLoaded"
+				:key="expandedColumn"
 				class="fixed-header"
 				:stripe="true"
 				:border="true"
@@ -72,18 +73,20 @@ export default {
 				text = "消息提示";
 			}
 			return text;
-		}
+		},
 	},
 	data() {
+		const cachedData = localStorage.getItem("ai_router_list");
 		return {
 			globalObject: this.$globalObject(),
 			dataLoaded: false,
 			warningVisible: false,
-			visibleColumns: ["text", "code", "image", "video"],
+			visibleColumns: ["text", "code", "image", "video", "audio"],
 			expandedColumn: null,
+            productType: [],
 			homeTable: {
 				border: true,
-				data: [],
+				data: cachedData ? JSON.parse(cachedData) : [],
 				columns: [
 					{
 						prop: "name",
@@ -137,6 +140,15 @@ export default {
 							resizable: false
 						},
 						render: (text, row, index) => this.renderColumn(text, row, index, "video"),
+						renderHeader: this.createHeaderRenderer
+					},
+					{
+						label: "语音",
+						prop: "audio",
+						bind: {
+							resizable: false
+						},
+						render: (text, row, index) => this.renderColumn(text, row, index, "audio"),
 						renderHeader: this.createHeaderRenderer
 					}
 				],
@@ -211,12 +223,11 @@ export default {
 				const res = await ProductsHomeAPI.getProducts({
 					data_list: this.$store.state.menu.assistant
 				});
-				const { data } = res.data.data;
-				this.dataLoaded = true;
+				const { data, product_type } = res.data.data;
 				this.$store.commit("SET_AI_ROUTER_ALL_LIST", data);
+                this.productType = product_type;
 				this.homeTable.data = data || [];
 			} catch (error) {
-				this.dataLoaded = true;
 				console.error("Error fetching getProductsApi: ", error);
 			}
 		},
@@ -316,7 +327,6 @@ export default {
 		// 点击行内某个标题文字的事件
 		handleBlock(data) {
 			const { plate_per, value } = data;
-			console.log("我擦，我被点了", data);
 			if (plate_per != 0) {
 				this.$router.push({
 					path: `/${value}`,
@@ -332,10 +342,10 @@ export default {
 
 		// 点击表头的事件
 		handleHeaderClick(column) {
-			if (["text", "code", "image", "video"].includes(column.property)) {
+			if (["text", "code", "image", "video", "audio"].includes(column.property)) {
 				// 如果点击的列已经是展开的列，则恢复到原始状态
 				if (this.expandedColumn === column.property) {
-					this.visibleColumns = ["text", "code", "image", "video"];
+					this.visibleColumns = ["text", "code", "image", "video", "audio"];
 					this.expandedColumn = null;
 				} else {
 					// 否则，按照原来的逻辑展开该列
@@ -356,6 +366,8 @@ export default {
 	},
 
 	created() {
+		const cachedData = localStorage.getItem("ai_router_list");
+		this.dataLoaded = !!cachedData;
 		this.watchAssistant();
 	},
 
@@ -372,7 +384,7 @@ export default {
 			});
 		}
 		this.$bus.on("handleAiAssistant", () => {
-			this.visibleColumns = ["text", "code", "image", "video"];
+			this.visibleColumns = ["text", "code", "image", "video", "audio"];
 			this.expandedColumn = null;
 		});
 	},
@@ -510,18 +522,18 @@ $border-width: 1px;
 	// min-height: 80px;
 	padding: 10px 0;
 	.text-body {
-		min-height: 65px;
-		max-width: 250px;
+		min-height: 90px;
+		max-width: 200px;
 		cursor: pointer;
 		text-align: left;
 		@include respond-to-width("lg") {
-			max-width: 400px;
+			max-width: 300px;
 		}
 	}
 	.el-dropdown {
 		position: absolute;
 		bottom: 5px;
-		right: 15px;
+		right: 10px;
 		.el-icon-arrow-right {
 			color: $custom--color-primary;
 			font-weight: bold;
