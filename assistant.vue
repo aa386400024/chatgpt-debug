@@ -2,7 +2,7 @@
  * @Author: zcl ex_zhangchunlong@citics.com
  * @Date: 2023-08-22 13:17:21
  * @LastEditors: zcl ex_zhangchunlong@citics.com
- * @LastEditTime: 2023-08-29 16:27:40
+ * @LastEditTime: 2023-08-29 16:39:35
  * @FilePath: /portal-fron-end/src/views/AiAssistantHome.vue
  * @Description: 
 
@@ -49,7 +49,6 @@
 <script>
 import ProductsHomeAPI from "@/api/assistant/productsHome";
 import MyDialog from "@/components/myDialog";
-import { judgeObject } from "@/utils";
 export default {
     components: {
         MyDialog
@@ -77,6 +76,7 @@ export default {
     },
     data() {
         const cachedData = localStorage.getItem("ai_router_list");
+        const cachedColumns = localStorage.getItem("homeTable_columns");
         return {
             globalObject: this.$globalObject(),
             dataLoaded: false,
@@ -87,7 +87,7 @@ export default {
             homeTable: {
                 border: true,
                 data: cachedData ? JSON.parse(cachedData) : [],
-                columns: [],
+                columns: cachedColumns ? JSON.parse(cachedColumns) : [],
                 rowStyle: {
                     height: "130px",
                     lineHeight: "130px",
@@ -147,6 +147,11 @@ export default {
                                 localStorage.getItem("ai_router_list")
                             );
                         }
+                        if (localStorage.getItem("homeTable_columns") != undefined) {
+                            this.homeTable.data = JSON.parse(
+                                localStorage.getItem("homeTable_columns")
+                            );
+                        }
                         this.getProductsApi();
                     }
                 }
@@ -191,6 +196,7 @@ export default {
                         renderHeader: this.createHeaderRenderer
                     }))
                 ];
+                localStorage.setItem("homeTable_columns", JSON.stringify(this.homeTable.columns));
             } catch (error) {
                 console.error("Error fetching getProductsApi: ", error);
             }
@@ -331,7 +337,8 @@ export default {
 
     created() {
         const cachedData = localStorage.getItem("ai_router_list");
-        this.dataLoaded = !!cachedData;
+        const cachedColumns = localStorage.getItem("homeTable_columns");
+        this.dataLoaded = !!cachedData && !!cachedColumns;
         this.watchAssistant();
     },
 
